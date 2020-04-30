@@ -1,0 +1,10 @@
+{
+  "Id": "WrathBlueprintDump",
+  "DisplayName": "Blueprint Dump",
+  "Author": "spacehamster",
+  "Version": "1.0.0",
+  "ManagerVersion": "0.14.1",
+  "Requirements": [],
+  "AssemblyName": "WrathBlueprintDump.dll",
+  "EntryMethod": "CustomBlueprints.Main.Load"
+}

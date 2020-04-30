@@ -1,0 +1,152 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{DF94F820-89C7-4149-83A4-2DA2F8CFDB99}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>WrathBlueprintDump</RootNamespace>
+    <AssemblyName>WrathBlueprintDump</AssemblyName>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <Deterministic>false</Deterministic>
+    <TargetFrameworkProfile />
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>portable</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>none</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\WrathBlueprintDump\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Debug Install|AnyCPU'">
+    <DebugSymbols>true</DebugSymbols>
+    <OutputPath>..\..\..\..\..\..\..\Program Files %28x86%29\Steam\steamapps\common\Pathfinder Second Adventure Demo\Mods\WrathBlueprintDump\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <DebugType>portable</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="0Harmony12">
+      <HintPath>..\libs\0Harmony12.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>..\libs\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>..\libs\Assembly-CSharp-firstpass.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\libs\Newtonsoft.Json.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="UnityEngine">
+      <HintPath>..\libs\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.AnimationModule">
+      <HintPath>..\libs\UnityEngine.AnimationModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.AssetBundleModule">
+      <HintPath>..\libs\UnityEngine.AssetBundleModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>..\libs\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>..\libs\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.JSONSerializeModule">
+      <HintPath>..\libs\UnityEngine.JSONSerializeModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UI">
+      <HintPath>..\libs\UnityEngine.UI.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.UNETModule">
+      <HintPath>..\libs\UnityEngine.UNETModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityModManager">
+      <HintPath>..\libs\UnityModManager.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AssetsDump.cs" />
+    <Compile Include="BlueprintInfo.cs" />
+    <Compile Include="ILogger.cs" />
+    <Compile Include="JSON\ArrayConverter.cs" />
+    <Compile Include="JSON\BlueprintAssetIdConverter.cs" />
+    <Compile Include="JSON\BlueprintContractResolver.cs" />
+    <Compile Include="JSON\BlueprintConverter.cs" />
+    <Compile Include="JSON\BlueprintReferenceConverter.cs" />
+    <Compile Include="JSON\DefaultAssetProvider.cs" />
+    <Compile Include="JSON\GameObjectConverter.cs" />
+    <Compile Include="JSON\GameObjectAssetIdConverter.cs" />
+    <Compile Include="JSON\IAssetProvider.cs" />
+    <Compile Include="JSON\JsonBlueprints.cs" />
+    <Compile Include="JSON\LocalizedStringConverter.cs" />
+    <Compile Include="JSON\LongAsEnumValueProvider.cs" />
+    <Compile Include="JSON\PushValue.cs" />
+    <Compile Include="JSON\ScriptableObjectConverter.cs" />
+    <Compile Include="JSON\SpellDescriptorWrapperConverter.cs" />
+    <Compile Include="JSON\TagListConverter.cs" />
+    <Compile Include="JSON\TMPConverter.cs" />
+    <Compile Include="JSON\TMPFontConverter.cs" />
+    <Compile Include="JSON\UnitCustomizationVariationConverter.cs" />
+    <Compile Include="JSON\UnityEventConverter.cs" />
+    <Compile Include="JSON\UnityJsonConverter.cs" />
+    <Compile Include="JSON\UnityObjectConverter.cs" />
+    <Compile Include="JSON\WeakResourceLinkConverter.cs" />
+    <Compile Include="Main.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="BlueprintUtil.cs" />
+    <Compile Include="Settings.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="info.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Repository.json" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
+</Project>
