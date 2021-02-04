@@ -1,13 +1,12 @@
 ﻿using UnityEngine;
-using Harmony12;
 using UnityModManagerNet;
-using System.Reflection;
 using System;
-using UnityEngine.SceneManagement;
 using Kingmaker.Blueprints;
 using Kingmaker.Visual.CharacterSystem;
 using Kingmaker.Blueprints.CharGen;
 using System.IO;
+using Kingmaker.DialogSystem.Blueprints;
+using System.Linq;
 
 namespace CustomBlueprints
 {
@@ -77,6 +76,16 @@ namespace CustomBlueprints
                 {
                     AssetsDump.DumpAssets();
                 }
+                if (GUILayout.Button("DumpCompanions"))
+                {
+                    var blueprints = AssetsDump.GetBlueprints()
+                        .OfType<BlueprintUnit>()
+                        .Where(bp => bp.name.ToLower().Contains("companion"));
+                    foreach (var blueprint in blueprints)
+                    {
+                        JsonBlueprints.Dump(blueprint, $"Companions/{blueprint.name}.{blueprint.AssetGuid}.json");
+                    }
+                }
                 if (GUILayout.Button("DumpClassRaceBlueprints"))
                 {
                     AssetsDump.DumpQuick();
@@ -90,7 +99,8 @@ namespace CustomBlueprints
                 }
                 if (GUILayout.Button("DumpFlags"))
                 {
-                    var blueprints = ResourcesLibrary.GetBlueprints<BlueprintUnlockableFlag>();
+                    var blueprints = AssetsDump.GetBlueprints()
+                        .OfType<BlueprintUnlockableFlag>();
                     Directory.CreateDirectory("Blueprints");
                     using (var file = new StreamWriter("Blueprints/log.txt"))
                     {

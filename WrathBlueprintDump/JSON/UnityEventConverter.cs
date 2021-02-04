@@ -1,16 +1,9 @@
-﻿using Harmony12;
-using JetBrains.Annotations;
-using Kingmaker.Blueprints;
-using Kingmaker.Localization;
+﻿using HarmonyLib;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using TMPro;
 using UnityEngine.Events;
 
 namespace CustomBlueprints

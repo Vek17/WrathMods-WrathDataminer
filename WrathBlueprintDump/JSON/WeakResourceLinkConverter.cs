@@ -20,53 +20,12 @@ namespace CustomBlueprints
         {
             var resource = (WeakResourceLink)o;
             string path = null;
-            ResourcesLibrary.LibraryObject.ResourceNamesByAssetId.TryGetValue(resource.AssetId, out path);
+            AssetsDump.GetResourceGuidMap().TryGetValue(resource.AssetId, out path);
             w.WriteValue(string.Format($"Resource:{resource.AssetId}:{path ?? "NULL"}"));
         }
         public override object ReadJson(JsonReader reader, Type type, object existing, JsonSerializer serializer)
         {
-            string text = (string)reader.Value;
-            if (text == null || text == "null")
-            {
-                return null;
-            }
-            if (text.StartsWith("Resource"))
-            {
-                var parts = text.Split(':');
-                var link = (WeakResourceLink)Activator.CreateInstance(type);
-                link.AssetId = parts[1];
-                return link;
-            }
-            if (text.StartsWith("File:"))
-            {
-                var parts = text.Split(':');
-                var path = $"{Main.ModPath}/data/{parts[1]}";
-                if (JsonBlueprints.ResourceAssetIds.ContainsKey(path))
-                {
-                    var link = (WeakResourceLink)Activator.CreateInstance(type);
-                    link.AssetId = JsonBlueprints.ResourceAssetIds[path];
-                    return link;
-                }
-                else
-                {
-                    var baseType = type;
-                    while (baseType.IsSubclassOf(typeof(WeakResourceLink)))
-                    {
-                        baseType = baseType.BaseType;
-                    }
-                    var isType = baseType == typeof(WeakResourceLink);
-                    var resourceLink = type.BaseType;
-                    var resourceType = resourceLink.GenericTypeArguments[0];
-                    var resource = (UnityEngine.Object)JsonBlueprints.Load(path, resourceType);
-                    var assetId = JsonBlueprints.AssetProvider.AddResource<UnityEngine.Object>(resource, path);
-                    JsonBlueprints.ResourceAssetIds[path] = assetId;
-                    var link = (WeakResourceLink)Activator.CreateInstance(type);
-                    link.AssetId = assetId;
-                    return link;
-
-                }
-            }
-            throw new NotImplementedException($"Not implemented for type {type} with value {text}");
+            throw new NotImplementedException();
         }
 
         // ReSharper disable once IdentifierTypo

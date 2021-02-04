@@ -26,31 +26,7 @@ namespace CustomBlueprints
           JsonSerializer serializer
         )
         {
-            string text = (string)reader.Value;
-            if (text == null || text == "null")
-            {
-                return null;
-            }
-            if (text.StartsWith("Blueprint"))
-            {
-                var parts = text.Split(':');
-                BlueprintScriptableObject blueprintScriptableObject = JsonBlueprints.AssetProvider.GetBlueprint(objectType, parts[1]);
-                return blueprintScriptableObject;
-            }
-            if (text.StartsWith("File"))
-            {
-                var parts = text.Split(':');
-                var path = Path.Combine(Main.ModPath, "data", parts[1]);
-                var blueprintName = Path.GetFileNameWithoutExtension(path);
-                if (JsonBlueprints.Blueprints.ContainsKey(blueprintName))
-                {
-                    return JsonBlueprints.Blueprints[blueprintName];
-                }
-                Main.DebugLog($"Reading blueprint from file: {text}");
-                var result = JsonBlueprints.Load(path, objectType);
-                return result;
-            }
-            throw new JsonSerializationException(string.Format("Invalid blueprint format {0}", text));
+            throw new NotImplementedException();
         }
         private static readonly Type _tBlueprintScriptableObject = typeof(BlueprintScriptableObject);
         public override bool CanConvert(Type type) => _tBlueprintScriptableObject.IsAssignableFrom(type);

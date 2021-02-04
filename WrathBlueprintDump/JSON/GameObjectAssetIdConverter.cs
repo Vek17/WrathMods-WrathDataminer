@@ -27,14 +27,7 @@ namespace CustomBlueprints
 
         public override object ReadJson(JsonReader reader, Type type, object existing, JsonSerializer serializer)
         {
-            if (reader.TokenType == JsonToken.Null)
-            {
-                return null;
-            }
-            JObject jObject = JObject.Load(reader);
-            int instanceId = (int)jObject["InstanceId"];
-            var result = JsonBlueprints.AssetProvider.GetUnityObject(type, instanceId);
-            return result;
+            throw new NotImplementedException();
         }
         public override bool CanConvert(Type type)
         {

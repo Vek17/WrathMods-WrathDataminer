@@ -15,15 +15,41 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
-using Harmony12;
 using Kingmaker.Visual.Critters;
 using UnityEngine.SceneManagement;
 using Newtonsoft.Json;
+using Kingmaker.BundlesLoading;
+using HarmonyLib;
 
 namespace CustomBlueprints
 {
     public class AssetsDump
     {
+        public static BlueprintScriptableObject[] GetBlueprints()
+        {
+            var bundle = (AssetBundle)AccessTools.Field(typeof(ResourcesLibrary), "s_BlueprintsBundle")
+                .GetValue(null);
+            return bundle.LoadAllAssets<BlueprintScriptableObject>();
+        }
+
+        public static Dictionary<string, BlueprintScriptableObject> GetLoadedBlueprints()
+        {
+            return (Dictionary<string, BlueprintScriptableObject>)AccessTools
+                .Field(typeof(ResourcesLibrary), "s_LoadedBlueprints")
+                .GetValue(null);
+        }
+        public static Dictionary<string, BlueprintScriptableObject> GetBlueprintMap()
+        {
+            return GetBlueprints()
+                .ToDictionary(bp => bp.AssetGuid, bp => bp);
+        }
+        public static Dictionary<string, string> GetResourceGuidMap()
+        {
+            var locationList = (LocationList)AccessTools
+                .Field(typeof(BundlesLoadService), "m_LocationList")
+                .GetValue(BundlesLoadService.Instance);
+            return locationList.GuidToBundle;
+        }
         public static void DumpBlueprint(BlueprintScriptableObject blueprint, string directory = "Blueprints", bool verbose = false)
         {
             JsonSerializerSettings settings = null;
@@ -38,7 +64,7 @@ namespace CustomBlueprints
         {
             var seen = new HashSet<Type>();
 
-            var blueprints = ResourcesLibrary.GetBlueprints<BlueprintScriptableObject>();
+            var blueprints = GetBlueprints();
             foreach (var blueprint in blueprints)
             {
                 if (!seen.Contains(blueprint.GetType()))
@@ -56,7 +82,7 @@ namespace CustomBlueprints
                 try
                 {
                     if (obj is BlueprintScriptableObject blueprint &&
-                        !ResourcesLibrary.LibraryObject.BlueprintsByAssetId.ContainsKey(blueprint.AssetGuid))
+                        !GetBlueprintMap().ContainsKey(blueprint.AssetGuid))
                     {
                         JsonBlueprints.Dump(blueprint, $"ScriptableObjects/{blueprint.GetType()}/{blueprint.name}.{blueprint.AssetGuid}.json");
                     }
@@ -89,14 +115,14 @@ namespace CustomBlueprints
                 typeof(BlueprintItemWeapon),
                 typeof(BlueprintBuff)
             };
-            foreach (var blueprint in ResourcesLibrary.GetBlueprints<BlueprintScriptableObject>())
+            foreach (var blueprint in GetBlueprints())
             {
                 if (types.Contains(blueprint.GetType())) DumpBlueprint(blueprint);
             }
         }
         public static void DumpAllBlueprints()
         {
-            var blueprints = ResourcesLibrary.GetBlueprints<BlueprintScriptableObject>();
+            var blueprints = GetBlueprints();
             Directory.CreateDirectory("Blueprints");
             using (var file = new StreamWriter("Blueprints/log.txt"))
             {
@@ -116,7 +142,7 @@ namespace CustomBlueprints
         }
         public static void DumpAllBlueprintsVerbose()
         {
-            var blueprints = ResourcesLibrary.GetBlueprints<BlueprintScriptableObject>();
+            var blueprints = GetBlueprints();
             Directory.CreateDirectory("BlueprintsVerbose");
             using (var file = new StreamWriter("BlueprintsVerbose/log.txt"))
             {
@@ -141,21 +167,21 @@ namespace CustomBlueprints
         }
         public static void DumpEquipmentEntities()
         {
-            foreach (var kv in ResourcesLibrary.LibraryObject.ResourceNamesByAssetId)
+            foreach (var bp in GetBlueprints())
             {
-                var resource = ResourcesLibrary.TryGetResource<EquipmentEntity>(kv.Key);
+                var resource = ResourcesLibrary.TryGetResource<EquipmentEntity>(bp.AssetGuid);
                 if (resource == null) continue;
-                DumpResource(resource, kv.Key);
+                DumpResource(resource, bp.AssetGuid);
                 ResourcesLibrary.CleanupLoadedCache();
             }
         }
         public static void DumpUnitViews()
         {
-            foreach (var kv in ResourcesLibrary.LibraryObject.ResourceNamesByAssetId)
+            foreach (var bp in GetBlueprints())
             {
-                var resource = ResourcesLibrary.TryGetResource<UnitEntityView>(kv.Key);
+                var resource = ResourcesLibrary.TryGetResource<UnitEntityView>(bp.AssetGuid);
                 if (resource == null) continue;
-                DumpResource(resource, kv.Key);
+                DumpResource(resource, bp.AssetGuid);
                 ResourcesLibrary.CleanupLoadedCache();
                 //break;
             }
@@ -178,10 +204,11 @@ namespace CustomBlueprints
                 //Note: PrefabLink : WeakResourceLink<GameObject> exists
             };
             Directory.CreateDirectory($"Blueprints/");
-            var blueprints = ResourcesLibrary.GetBlueprints<BlueprintScriptableObject>().ToList();
-            var blueprintsByAssetId = ResourcesLibrary.LibraryObject.BlueprintsByAssetId;
-            Main.DebugLog($"BlueprintsByAssetId contains  {blueprintsByAssetId.Count} blueprints");
-            Main.DebugLog($"Dumping {blueprints.Count} blueprints");
+            var loadedBlueprints = GetLoadedBlueprints();
+            var blueprints = GetBlueprints();
+            Main.DebugLog($"LoadedBlueprints contains  {loadedBlueprints.Count} blueprints");
+            Main.DebugLog($"Blueprint bundle contains  {blueprints.Length} blueprints");
+            Main.DebugLog($"Dumping {blueprints.Length} blueprints");
             using (var file = new StreamWriter("Blueprints/Blueprints.txt"))
             {
                 file.WriteLine($"name\tAssetId\tType");
@@ -190,19 +217,19 @@ namespace CustomBlueprints
                     file.WriteLine($"{blueprint.name}\t{blueprint.AssetGuid}\t{blueprint.GetType()}");
                 }
             }
-            var resourcePathsByAssetId = ResourcesLibrary.LibraryObject.ResourceNamesByAssetId;
-            Main.DebugLog($"ResourcePathsByAssetId contains  {blueprintsByAssetId.Count} resources");
+            var resourcePathsByAssetId = GetResourceGuidMap();
+            Main.DebugLog($"ResourcePathsByAssetId contains {resourcePathsByAssetId.Count} resources");
             using (var file = new StreamWriter("Blueprints/Resources.txt"))
             {
-                file.WriteLine($"Name\tAssetId\tType\tBaseType\tInstanceId");
-                foreach (var kv in ResourcesLibrary.LibraryObject.ResourceNamesByAssetId)
+                file.WriteLine($"Name\tAssetId\tBundleName\tType\tBaseType");
+                foreach (var kv in resourcePathsByAssetId)
                 {
                     var resource = ResourcesLibrary.TryGetResource<UnityEngine.Object>(kv.Key);
                     if (resource != null)
                     {
-                        var baseType = resource.GetType().IsAssignableFrom(typeof(UnityEngine.GameObject)) ? "GameObject" :
-                                         resource.GetType().IsAssignableFrom(typeof(UnityEngine.ScriptableObject)) ? "ScriptableObject" :
-                                         resource.GetType().IsAssignableFrom(typeof(UnityEngine.Component)) ? "Component" :
+                        var baseType = resource.GetType().IsAssignableFrom(typeof(GameObject)) ? "GameObject" :
+                                         resource.GetType().IsAssignableFrom(typeof(ScriptableObject)) ? "ScriptableObject" :
+                                         resource.GetType().IsAssignableFrom(typeof(Component)) ? "Component" :
                                          "Object";
                         var go = resource as GameObject;
                         var typeName = resource?.GetType().Name ?? "NULL";
@@ -216,7 +243,7 @@ namespace CustomBlueprints
                                 }
                             }
                         }
-                        file.WriteLine($"{kv.Value}\t{kv.Key}\t{typeName}\t{baseType}\t{resource?.GetInstanceID()}");
+                        file.WriteLine($"{resource.name}\t{kv.Key}\t{kv.Value}\t{typeName}\t{baseType}");
                         ResourcesLibrary.CleanupLoadedCache();
                     }
                 }
