@@ -20,28 +20,42 @@ using UnityEngine.SceneManagement;
 using Newtonsoft.Json;
 using Kingmaker.BundlesLoading;
 using HarmonyLib;
+using Kingmaker.Blueprints.JsonSystem;
+using Kingmaker.Cheats;
 
 namespace CustomBlueprints
 {
     public class AssetsDump
     {
-        public static BlueprintScriptableObject[] GetBlueprints()
+        public static SimpleBlueprint[] GetBlueprints()
         {
-            var bundle = (AssetBundle)AccessTools.Field(typeof(ResourcesLibrary), "s_BlueprintsBundle")
-                .GetValue(null);
-            return bundle.LoadAllAssets<BlueprintScriptableObject>();
+            
+            var blueprints = (Dictionary<BlueprintGuid, BlueprintsCache.BlueprintCacheEntry>)AccessTools
+            .Field(typeof(BlueprintsCache), "m_LoadedBlueprints")
+            .GetValue(ResourcesLibrary.BlueprintsCache);
+            var keys = blueprints.Keys.ToArray();
+            return keys.Select(k => {
+                try {
+                    return ResourcesLibrary.TryGetBlueprint(k);
+                } catch {
+                    Main.DebugLog($"Failed on: {k}");
+                    return null;
+                }
+                }).Where(v => v != null).ToArray();
+            
+            //return Kingmaker.Cheats.Utilities.GetScriptableObjects<BlueprintScriptableObject>().ToArray();
         }
 
-        public static Dictionary<string, BlueprintScriptableObject> GetLoadedBlueprints()
+        public static Dictionary<string, SimpleBlueprint> GetLoadedBlueprints()
         {
-            return (Dictionary<string, BlueprintScriptableObject>)AccessTools
-                .Field(typeof(ResourcesLibrary), "s_LoadedBlueprints")
+            return (Dictionary<string, SimpleBlueprint>)AccessTools
+                .Field(typeof(BlueprintsCache), "s_LoadedBlueprints")
                 .GetValue(null);
         }
-        public static Dictionary<string, BlueprintScriptableObject> GetBlueprintMap()
+        public static Dictionary<string, SimpleBlueprint> GetBlueprintMap()
         {
             return GetBlueprints()
-                .ToDictionary(bp => bp.AssetGuid, bp => bp);
+                .ToDictionary(bp => bp.AssetGuid.ToString(), bp => bp);
         }
         public static Dictionary<string, string> GetResourceGuidMap()
         {
@@ -50,7 +64,7 @@ namespace CustomBlueprints
                 .GetValue(BundlesLoadService.Instance);
             return locationList.GuidToBundle;
         }
-        public static void DumpBlueprint(BlueprintScriptableObject blueprint, string directory = "Blueprints", bool verbose = false)
+        public static void DumpBlueprint(SimpleBlueprint blueprint, string directory = "Blueprints", bool verbose = false)
         {
             JsonSerializerSettings settings = null;
             if (verbose)
@@ -58,7 +72,13 @@ namespace CustomBlueprints
                 settings = JsonBlueprints.CreateSettings();
                 settings.DefaultValueHandling = DefaultValueHandling.Include;
             }
-            JsonBlueprints.Dump(blueprint, $"{directory}/{blueprint.GetType()}/{blueprint.name}.{blueprint.AssetGuid}.json", settings);
+            //var wrapper = new BlueprintJsonWrapper(blueprint);
+            //wrapper.Save($"{directory}/{blueprint.GetType()}/{blueprint.name}.{blueprint.AssetGuid}.json");
+            try {
+                JsonBlueprints.Dump(blueprint, $"{directory}/{blueprint.GetType()}/{blueprint.name}.{blueprint.AssetGuid}.json", settings);
+            } catch {
+                Main.DebugLog($"Dump Failed on: {blueprint.AssetGuid} - {blueprint.name}");
+            }
         }
         public static void DumpBlueprints()
         {
@@ -76,6 +96,7 @@ namespace CustomBlueprints
         }
         public static void DumpScriptableObjects()
         {
+#if false
             Directory.CreateDirectory("ScriptableObjects");
             foreach (var obj in UnityEngine.Object.FindObjectsOfType<ScriptableObject>())
             {
@@ -96,6 +117,7 @@ namespace CustomBlueprints
                     File.WriteAllText($"ScriptableObjects/{obj.GetType()}/{obj.name}.{obj.GetInstanceID()}.txt", ex.ToString());
                 }
             }
+#endif
         }
         public static void DumpQuick()
         {
@@ -123,6 +145,8 @@ namespace CustomBlueprints
         public static void DumpAllBlueprints()
         {
             var blueprints = GetBlueprints();
+            
+            Main.DebugLog($"BP Count: {blueprints.Length}");
             Directory.CreateDirectory("Blueprints");
             using (var file = new StreamWriter("Blueprints/log.txt"))
             {
@@ -139,6 +163,7 @@ namespace CustomBlueprints
                     }
                 }
             }
+            
         }
         public static void DumpAllBlueprintsVerbose()
         {
@@ -169,9 +194,9 @@ namespace CustomBlueprints
         {
             foreach (var bp in GetBlueprints())
             {
-                var resource = ResourcesLibrary.TryGetResource<EquipmentEntity>(bp.AssetGuid);
+                var resource = ResourcesLibrary.TryGetResource<EquipmentEntity>(bp.AssetGuid.ToString());
                 if (resource == null) continue;
-                DumpResource(resource, bp.AssetGuid);
+                DumpResource(resource, bp.AssetGuid.ToString());
                 ResourcesLibrary.CleanupLoadedCache();
             }
         }
@@ -179,9 +204,9 @@ namespace CustomBlueprints
         {
             foreach (var bp in GetBlueprints())
             {
-                var resource = ResourcesLibrary.TryGetResource<UnitEntityView>(bp.AssetGuid);
+                var resource = ResourcesLibrary.TryGetResource<UnitEntityView>(bp.AssetGuid.ToString());
                 if (resource == null) continue;
-                DumpResource(resource, bp.AssetGuid);
+                DumpResource(resource, bp.AssetGuid.ToString());
                 ResourcesLibrary.CleanupLoadedCache();
                 //break;
             }
